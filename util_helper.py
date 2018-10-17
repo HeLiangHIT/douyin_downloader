@@ -97,6 +97,7 @@ async def get_music_url(music_id):
 
 
 async def mock_download_video(video_item):
+    '''模拟下载器下载视频和音频'''
     # 获取真实下载地址
     video_url = await get_video_url(video_item['aweme_id'])
     music_url = await get_music_url(video_item["music_id"])
@@ -123,8 +124,8 @@ if __name__ == '__main__':
 
     video_list, _, _ = trio.run(example_favorite_url, "84834596404", 0)
 
-    for video in video_list:
-        video_item = parse_video_info(video)
-        isok = trio.run(mock_download_video, video_item)
+    video = video_list[0]
+    video_item = parse_video_info(video)
+    isok = trio.run(mock_download_video, video_item)
 
 
