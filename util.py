@@ -5,15 +5,15 @@
 # @Link    : https://github.com/HeLiangHIT
 
 '''
-ref: https://github.com/AppSign/douyin
-抖音通信协议 2.9.1版本协议签名
+ref1: https://github.com/AppSign/douyin  抖音通信协议 2.9.1版本协议签名
+ref2: https://github.com/hacksman/spider_world 抖音爬虫例子
 '''
 
 import trio, asks, logging, json, time, os
 asks.init('trio')
 
 logging.basicConfig(level=logging.DEBUG, 
-    format='%(asctime)s %(filename)s:%(lineno)d %(threadName)s:%(funcName)s %(levelname)s-%(message)s')
+    format='%(asctime)s %(filename)s:%(lineno)d %(threadName)s:%(funcName)s %(levelname)s] %(message)s')
 
 # 基本配置
 _API = "https://api.appsign.vip:2688"
@@ -38,7 +38,10 @@ _APPINFO = {
 IPHONE_HEADER = {"User-Agent": "Aweme/2.8.0 (iPhone; iOS 11.0; Scale/2.00)"}
 
 
-avoid_too_long = lambda text, max_len = 50: f"{text[:max_len]}..." if len(text) > max_len else text
+def trim(text, max_len = 50, suffix = '...'):
+    '''为避免打印的日志过长，可以使用该函数裁剪一下'''
+    text = text.replace('\n', '')
+    return f"{text[:max_len]} {suffix}" if len(text) > max_len else text
 
 
 async def getToken(version=_APPINFO['version_code']):
@@ -54,8 +57,8 @@ async def getToken(version=_APPINFO['version_code']):
     '''
     url = f"{_API}/token/douyin/version/{version}" if version else f"{_API}/token/douyin"
     resp = await asks.get(url)
-    logging.debug(f"get response from {url} is {resp} with body: {avoid_too_long(resp.text)}")
-    return resp.json()['token']
+    logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
+    return resp.json().get('token', None)
 
 
 async def getDevice(version=_APPINFO['version_code']):
@@ -84,8 +87,8 @@ async def getDevice(version=_APPINFO['version_code']):
     '''
     url = f"{_API}/douyin/device/new/version/{version}" if version else "{_API}/douyin/device/new"
     resp = await asks.get(url)
-    logging.debug(f"get response from {url} is {resp} with body: {avoid_too_long(resp.text)}")
-    return resp.json()['data']
+    logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
+    return resp.json().get('data', None)
 
 
 def params2str(params):
@@ -103,13 +106,15 @@ async def getSign(token, query):
         "token":"TOKEN",
         "query":"通过参数生成的加签字符串"
     }
+    >>> data, res = trio.run(getSign, 'aaa', {"aaa":"aaa"})
+    >>> print(res)
+    {'success': False, 'error': 'token is error'}
     '''
-    if isinstance(query, dict):
-        query = params2str(query)
+    assert isinstance(query, dict)
     url = f"{_API}/sign"
-    resp = await asks.post(url, json={"token": token, "query": query})
-    logging.debug(f"post response from {url} is {resp} with body: {avoid_too_long(resp.text)}")
-    return resp.json()['data']
+    resp = await asks.post(url, json={"token": token, "query": params2str(query)})
+    logging.debug(f"post response from {url} is {resp} with body: {trim(resp.text)}")
+    return resp.json().get('data', None), resp.json()
 
 
 def mixString(pwd):
@@ -120,13 +125,19 @@ def mixString(pwd):
     return "".join([hex(ord(c) ^ 5)[-2:] for c in pwd])
 
 
+async def _get_sign_params(force = False):
+    '''获取可用的签名参数，由于每次获取后的有效时间是大概60分钟，因此'''
+    device = await getDevice()
+    token = await getToken()
+    return {** device, ** _APPINFO}, token
+
+
 async def get_signed_params(params):
     '''给请求 params 签名'''
     assert isinstance(params, dict)
-    device = await getDevice()
-    token = await getToken()
-    query_params = {**params, ** device, ** _APPINFO}
-    signed = await getSign(token, query_params)
+    common_params, token = await _get_sign_params()
+    query_params = {**params, ** common_params}
+    signed, _ = await getSign(token, query_params)
     return {**query_params, **signed}
 
 
