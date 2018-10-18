@@ -42,9 +42,13 @@ async def _get_favorite_list(user_id, max_cursor=0):
         "user_id": user_id,
         "max_cursor": str(max_cursor),
     }
-    params = await get_signed_params(favorite_para)
-    resp = await asks.get(url, params=params, verify=False, headers=IPHONE_HEADER)
-    logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
+    try:
+        params = await get_signed_params(favorite_para)
+        resp = await asks.get(url, params=params, verify=False, headers=IPHONE_HEADER)
+        logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
+    except (socket.gaierror, ) as e:
+        logging.error(f"get video list fail from {url}!")
+        return [], True, max_cursor
 
     favorite_info = resp.json()
     video_list = favorite_info.get('aweme_list')
@@ -63,11 +67,14 @@ async def _get_video_url(aweme_id):
     resp = await asks.get(url, params=params, data=post_data, headers=IPHONE_HEADER, verify=False)
     logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
 
-    video_info = resp.json()
-    play_addr_raw = video_info['aweme_detail']['video']['play_addr']['url_list']
-    # 注意测试发现这个播放列表里前两个链接都是可以用的，下载的时候可以为了保险起见循环下载测试
-    return play_addr_raw[0:2]
-
+    try:
+        video_info = resp.json()
+        play_addr_raw = video_info['aweme_detail']['video']['play_addr']['url_list']
+        # 注意测试发现这个播放列表里前两个链接都是可以用的，下载的时候可以为了保险起见循环下载测试
+        return play_addr_raw[0:2]
+    except Exception as e:
+        logging.error(f"get vido info failed!server response={resp.text}")
+        return None
 
 async def _get_music_url(music_id):
     '''获取音频地址，可以直接使用 asks.get(music_url, headers=IPHONE_HEADER, verify=False) 下载视频'''
@@ -75,7 +82,7 @@ async def _get_music_url(music_id):
     return url
 
 
-async def _parse_video_info(video):
+async def _parse_video_info(video, repeat_func=None):
     '''解析视频关键信息
     >>> video_list, _, _ = trio.run(_get_favorite_list, "84834596404", 0)
     >>> video = video_list[0]
@@ -91,8 +98,13 @@ async def _parse_video_info(video):
     music_id = video['music']['play_url'].get('uri')
     aweme_id = video.get("aweme_id")
 
-    video_url = await _get_video_url(aweme_id)
-    music_url = await _get_music_url(music_id)
+    file_name = "_".join([author_name, author_uid, trim(video_desc, 20, '')])
+    name = f"{file_name}.mp4"
+    if repeat_func and repeat_func(name):
+        video_url = music_url = None # 用于下载器的去重复处理回调函数，当文件已经存在时不用再获取视频地址了，无需下载
+    else:
+        video_url = await _get_video_url(aweme_id)
+        music_url = await _get_music_url(music_id)
 
     download_item = {
         "author_name": author_name,
@@ -102,18 +114,19 @@ async def _parse_video_info(video):
         "aweme_id" : aweme_id,
         "video_url" : video_url,
         "music_url" : music_url,
+        "name" : name,
     }
 
     return download_item
 
 
-async def get_favorite_list(user_id, max_cursor=0):
+async def get_favorite_list(user_id, max_cursor=0, repeat_func=None):
     '''爬取指定用户的所有喜欢视频列表，返回各个视频要下载需要的所有信息，请使用 async for video in get_favorite_list(uid): ...'''
     total = 0
     while True:
         video_list, hasmore, max_cursor = await _get_favorite_list(user_id, max_cursor)
         for video in video_list:
-            video_item = await _parse_video_info(video)
+            video_item = await _parse_video_info(video, repeat_func)
             total += 1
             yield video_item
         if not hasmore:

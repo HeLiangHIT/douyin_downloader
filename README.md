@@ -43,6 +43,7 @@ todo:
 11. 用户的评论信息
 12. 不能每次 get_signed_params 都 getDevice/getToken ，设定时间超时重获取就可以了。 done
 13. 为了避免重启时重复下载，对于判断依据存在的视频id就不要重复爬取了。
+14. 总是出现 socket.gaierror 这个错误，有必要向 asks 作者反馈一下。
 
 
 本地调试异步下载器的方法：

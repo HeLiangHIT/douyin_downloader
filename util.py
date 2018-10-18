@@ -9,7 +9,7 @@ ref1: https://github.com/AppSign/douyin  抖音通信协议 2.9.1版本协议签
 ref2: https://github.com/hacksman/spider_world 抖音爬虫例子
 '''
 
-import trio, asks, logging, json, time, os, arrow
+import trio, asks, logging, json, time, os, arrow, socket, random
 asks.init('trio')
 
 logging.basicConfig(level=logging.INFO, 
@@ -141,7 +141,7 @@ async def _get_sign_params(force = False):
     logging.debug(f"new sign params generated, last time is {_available['expired']}")
 
     _available = {
-        "expired" : arrow.utcnow().shift(minutes=55),
+        "expired" : arrow.utcnow().shift(minutes=3), # 实测貌似很快就失效了
         "common_params" : common_params,
         "token" : token
     }
@@ -169,16 +169,17 @@ class AsyncDownloader(object):
         if res_time <= 0: # 重试超过了次数
             return None
         try:
+            url = random.choice(url) if isinstance(url, list) else url
             res = await asks.get(url, headers=headers, timeout=timeout, retries=3)
-        except (trio.BrokenResourceError, trio.TooSlowError, asks.errors.RequestTimeout) as e:
+        except (socket.gaierror, trio.BrokenResourceError, trio.TooSlowError, asks.errors.RequestTimeout) as e:
             logging.error("download from %s fail]err=%s!" % (url, e))
             await trio.sleep(random.randint(1, 5)) # for scheduler
-            return await self.download_file(url, referer, res_time-1)
-        
+            return await self.download_file(url, res_time-1)
+
         if res.status_code not in [200, 202]:
             logging.warn(f"download from {url} fail]response={res}")
             await trio.sleep(random.randint(3, 10))
-            return await self.download_file(url, referer, res_time-1)
+            return await self.download_file(url, res_time-1)
         return res.content
 
     def is_file_downloaded(self, name):

@@ -20,7 +20,6 @@ Options:
 from douyin_tool import *
 from docopt import docopt
 
-
 # 默认配置参数
 _SAVE_DIR = "%s/Movies/douyin/" % os.path.expanduser('~') # os.environ['HOME']
 
@@ -31,12 +30,13 @@ async def download_videos(_receiver, downloader):
     while True:
         async for video in _receiver:
             # video = await _receiver.receive() # may get repeated tail
+            url = video['video_url']
             if video is None:
                 return # 结束下载
-            if downloader.is_file_downloaded(video['name']):
-                logging.info(f"{video['name']} is already downloaded!")
+            if downloader.is_file_downloaded(video['name']) or url is None:
+                logging.info(f"{video['name']} is already downloaded/expired!")
                 continue
-            url = video['video_url'][0] # TODO add list url support
+            
             logging.debug(f"downloading {url} ... ")
             content = await downloader.download_file(url)
             if content is not None:
@@ -53,10 +53,8 @@ func_dict = {
 
 
 # 生产-消费 流程 的生产者 _sender
-async def generate_videos(_sender, user, action):
-    async for video in func_dict[action](user):
-        file_name = "_".join([video["author_name"], video["author_uid"], trim(video["video_desc"], 20)])
-        video['name'] = f"{file_name}.mp4"
+async def generate_videos(_sender, user, action, repeat_func):
+    async for video in func_dict[action](user, repeat_func=repeat_func):
         await _sender.send(video)
     await _sender.send(None)
 
@@ -64,11 +62,11 @@ async def generate_videos(_sender, user, action):
 # 主函数
 async def main(user, action, save_dir, concurrency):
     logging.info(f"start download favorite video to {save_dir} with {concurrency} concurrency ...")
-    downloader = AsyncDownloader(save_dir)
+    downloader = AsyncDownloader(f"{save_dir}/{action}")
 
     async with trio.open_nursery() as nursery:
         _sender, _receiver = trio.open_memory_channel(concurrency) # 并行数量
-        nursery.start_soon(generate_videos, _sender, user, action)
+        nursery.start_soon(generate_videos, _sender, user, action, downloader.is_file_downloaded)
         nursery.start_soon(download_videos, _receiver, downloader)
 
     logging.info("file downloads over!")
