@@ -9,7 +9,7 @@ ref1: https://github.com/AppSign/douyin  抖音通信协议 2.9.1版本协议签
 ref2: https://github.com/hacksman/spider_world 抖音爬虫例子
 '''
 
-import trio, asks, logging, json, time, os
+import trio, asks, logging, json, time, os, arrow
 asks.init('trio')
 
 logging.basicConfig(level=logging.DEBUG, 
@@ -44,14 +44,14 @@ def trim(text, max_len = 50, suffix = '...'):
     return f"{text[:max_len]} {suffix}" if len(text) > max_len else text
 
 
-async def getToken(version=_APPINFO['version_code']):
+async def get_token(version=_APPINFO['version_code']):
     '''获取Token: 有效期60分钟
     get https://api.appsign.vip:2688/token/douyin -> 
     {
         "token":"5826aa5b56614ea798ca42d767170e74",
         "success":true
     }
-    >>> token = trio.run(getToken) # doctest: +ELLIPSIS
+    >>> token = trio.run(get_token) # doctest: +ELLIPSIS
     >>> print(len(token))
     32
     '''
@@ -61,7 +61,7 @@ async def getToken(version=_APPINFO['version_code']):
     return resp.json().get('token', None)
 
 
-async def getDevice(version=_APPINFO['version_code']):
+async def get_device(version=_APPINFO['version_code']):
     '''获取新的设备信息:有效期60分钟永久
     get https://api.appsign.vip:2688/douyin/device/new ->
     {
@@ -81,7 +81,7 @@ async def getDevice(version=_APPINFO['version_code']):
         },
         "success":true
     }
-    >>> device = trio.run(getDevice) # doctest: +ELLIPSIS
+    >>> device = trio.run(get_device) # doctest: +ELLIPSIS
     >>> print(device['device_type'])
     iPhone8,1
     '''
@@ -99,14 +99,14 @@ def params2str(params):
     return "&".join(["%s=%s" % (k, v) for k, v in params.items()])
 
 
-async def getSign(token, query):
+async def get_sign(token, query):
     '''使用拼装参数签名
     post https://api.appsign.vip:2688/sign -->
     {
         "token":"TOKEN",
         "query":"通过参数生成的加签字符串"
     }
-    >>> data, res = trio.run(getSign, 'aaa', {"aaa":"aaa"})
+    >>> data, res = trio.run(get_sign, 'aaa', {"aaa":"aaa"})
     >>> print(res)
     {'success': False, 'error': 'token is error'}
     '''
@@ -125,11 +125,25 @@ def mixString(pwd):
     return "".join([hex(ord(c) ^ 5)[-2:] for c in pwd])
 
 
+_available = {"expired": arrow.Arrow(2000, 1, 1, 0, 0, 0), "common_params": None, "token":None}
 async def _get_sign_params(force = False):
-    '''获取可用的签名参数，由于每次获取后的有效时间是大概60分钟，因此'''
-    device = await getDevice()
-    token = await getToken()
-    return {** device, ** _APPINFO}, token
+    '''获取可用的签名参数，由于每次获取后的有效时间是大概60分钟，
+    因此此处维护一个带时间戳的字典，如果超过 55min 则重新生成，否则就不重新生成，除非强制刷新'''
+    global _available
+    if not force and _available['expired'] > arrow.utcnow():
+        return _available['common_params'], _available['token']
+
+    device = await get_device()
+    common_params = {** device, ** _APPINFO}
+    token = await get_token()
+    logging.debug(f"new sign params generated, last time is {_available['expired']}")
+
+    _available = {
+        "expired" : arrow.utcnow().shift(minutes=55),
+        "common_params" : common_params,
+        "token" : token
+    }
+    return _available['common_params'], _available['token']
 
 
 async def get_signed_params(params):
@@ -137,8 +151,14 @@ async def get_signed_params(params):
     assert isinstance(params, dict)
     common_params, token = await _get_sign_params()
     query_params = {**params, ** common_params}
-    signed, _ = await getSign(token, query_params)
+    signed, _ = await get_sign(token, query_params)
     return {**query_params, **signed}
+
+
+
+
+
+
 
 
 

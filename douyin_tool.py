@@ -82,7 +82,9 @@ async def _parse_video_info(video):
     >>> video_list, _, _ = trio.run(_get_favorite_list, "84834596404", 0)
     >>> video = video_list[0]
     >>> video_item = trio.run(_parse_video_info, video)
-    >>> print(video_item['video_url'].startswith("http"))
+    >>> print(video_item['video_url'][0].startswith("http"))
+    True
+    >>> print(video_item['video_url'][1].startswith("http"))
     True
     '''
     author_name = video['author'].get("nickname")
@@ -114,7 +116,6 @@ async def get_favorite_list(user_id, max_cursor=0):
         video_list, hasmore, max_cursor = await _get_favorite_list(user_id, max_cursor)
         for video in video_list:
             video_item = await _parse_video_info(video)
-            logging.debug(f"")
             total += 1
             yield video_item
         if not hasmore:
@@ -123,25 +124,27 @@ async def get_favorite_list(user_id, max_cursor=0):
 
 
 async def _get_favorite_list_test():
-    '''测试 get_favorite_list_test 是否正确，这里只抓30个做测试'''
+    '''测试 get_favorite_list_test 是否正确，这里只抓几个做测试
+    >>> print(trio.run(_get_favorite_list_test))
+    5
+    '''
     total = 0
     async for video in get_favorite_list("84834596404"):
         video_name = "_".join([video["author_name"], video["author_uid"], trim(video["video_desc"], 20)])
         logging.info(f"begin download {video_name} to {_SAVE_DIR} ... ")
         total += 1
-        if total > 30:
+        if total >= 5:
             logging.info("assume we get finished!")
             return total
-            break
 
 
 
 
 if __name__ == '__main__':
-    # import doctest
-    # doctest.testmod(verbose=False)  # verbose=True shows the output
-    # logging.info("doctest finished.")
-    trio.run(_get_favorite_list_test)
+    import doctest
+    doctest.testmod(verbose=False)  # verbose=True shows the output
+    logging.info("doctest finished.")
+    
 
 
 
