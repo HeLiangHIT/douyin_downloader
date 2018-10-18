@@ -13,7 +13,7 @@ import trio, asks, logging, json, time, os
 asks.init('trio')
 
 logging.basicConfig(level=logging.DEBUG, 
-                format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
+    format='%(asctime)s %(filename)s:%(lineno)d %(threadName)s:%(funcName)s %(levelname)s-%(message)s')
 
 # 基本配置
 _API = "https://api.appsign.vip:2688"

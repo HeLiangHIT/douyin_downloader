@@ -19,6 +19,15 @@ todo:
 12. 不能每次 get_signed_params 都 getDevice/getToken ，设定时间超时重获取就可以了。
 
 
+本地调试异步下载器的方法：
+1. 准备一个有合适文件的目录（比如 a.jpg/b.mp4/c.txt ），在下面执行 `python -m http.server > server.log &` 打开文件HTTP服务器
+2. 使用 `curl -v -N --noproxy -XGET http://127.0.0.1:8000/a.jpg` 或者 `curl -v -N --noproxy -XHEAD http://127.0.0.1:8000/b.mp4` 调试请求。
+3. 根据 curl 返回内容调试下载器参数。
+
+
+
+
+
 当前爬取的日志信息：
 2018-10-18 01:33:03,470 - util.py[line:87] - DEBUG: get response from https://api.appsign.vip:2688/douyin/device/new/version/2.7.0 is <Response 200 OK> with body: {"success": true, "data": {"openudid": "dfc790da8c...
 
