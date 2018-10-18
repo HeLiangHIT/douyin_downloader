@@ -23,10 +23,14 @@ async def get_follow_list(user_id, offset=0, count=20):
         "max_time": int(time.time()),
         "ac": "WIFI",
     }
-    params = await get_signed_params(follow_para)
-    resp = await asks.get(url, params=params, verify=False, headers=IPHONE_HEADER)
-    logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
-    return resp.json()['followings']
+    try:
+        params = await get_signed_params(follow_para)
+        resp = await asks.get(url, params=params, verify=False, headers=IPHONE_HEADER)
+        logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
+        return resp.json()['followings']
+    except Exception as e:
+        logging.error(f"get follow list fail from {url}]err=%s" % e)
+        return []
 
 
 async def _get_favorite_list(user_id, max_cursor=0):
@@ -61,13 +65,11 @@ async def _get_favorite_list(user_id, max_cursor=0):
 async def _get_video_url(aweme_id):
     '''获取视频地址，可以直接使用 asks.get(video_url, headers=IPHONE_HEADER, verify=False) 下载视频'''
     url = "https://aweme.snssdk.com/aweme/v1/aweme/detail/"
-
     video_para = post_data = {'aweme_id': aweme_id}
-    params = await get_signed_params(video_para)
-    resp = await asks.get(url, params=params, data=post_data, headers=IPHONE_HEADER, verify=False)
-    logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
-
     try:
+        params = await get_signed_params(video_para)
+        resp = await asks.get(url, params=params, data=post_data, headers=IPHONE_HEADER, verify=False)
+        logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
         video_info = resp.json()
         play_addr_raw = video_info['aweme_detail']['video']['play_addr']['url_list']
         # 注意测试发现这个播放列表里前两个链接都是可以用的，下载的时候可以为了保险起见循环下载测试
