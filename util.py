@@ -14,6 +14,9 @@ asks.init('trio')
 
 logging.basicConfig(level=logging.DEBUG, 
     format='%(asctime)s %(filename)s:%(lineno)d %(threadName)s:%(funcName)s %(levelname)s] %(message)s')
+IPHONE_HEADER = {"User-Agent": "Aweme/2.8.0 (iPhone; iOS 11.0; Scale/2.00)"}
+DOWNLOAD_TIMEOUT = 600
+RETRIES_TIMES = 5
 
 # 基本配置
 _API = "https://api.appsign.vip:2688"
@@ -35,7 +38,6 @@ _APPINFO = {
     "aid": "1128",
 }
 '''
-IPHONE_HEADER = {"User-Agent": "Aweme/2.8.0 (iPhone; iOS 11.0; Scale/2.00)"}
 
 
 def trim(text, max_len = 50, suffix = '...'):
@@ -156,8 +158,39 @@ async def get_signed_params(params):
 
 
 
+# 异步下载/保存器
+class AsyncDownloader(object):
+    def __init__(self, save_dir):
+        super(AsyncDownloader, self).__init__()
+        self.save_dir = save_dir
+        os.system("mkdir -p %s" % save_dir)
+        
+    async def download_file(self, url, headers=IPHONE_HEADER, timeout=DOWNLOAD_TIMEOUT, res_time=RETRIES_TIMES):
+        if res_time <= 0: # 重试超过了次数
+            return None
+        try:
+            res = await asks.get(url, headers=headers, timeout=timeout, retries=3)
+        except (trio.BrokenResourceError, trio.TooSlowError, asks.errors.RequestTimeout) as e:
+            logging.error("download from %s fail]err=%s!" % (url, e))
+            await trio.sleep(random.randint(1, 5)) # for scheduler
+            return await self.download_file(url, referer, res_time-1)
+        
+        if res.status_code not in [200, 202]:
+            logging.warn(f"download from {url} fail]response={res}")
+            await trio.sleep(random.randint(3, 10))
+            return await self.download_file(url, referer, res_time-1)
+        return res.content
 
+    def is_file_downloaded(self, name):
+        file_path = os.path.join(self.save_dir, name)
+        return os.path.exists(file_path)
 
+    # 异步文件保存
+    async def save_file(self, name, content):
+        file_path = os.path.join(self.save_dir, name)
+        fd = await trio.open_file(file_path, 'wb')
+        await fd.write(content)
+        await fd.aclose()
 
 
 

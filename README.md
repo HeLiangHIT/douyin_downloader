@@ -1,4 +1,29 @@
 
+
+
+# 用法
+查看帮助： python douyin_downloader.py --help
+```
+抖音下载器: 异步下载抖音视频
+
+Usage:
+  douyin_downloader.py user action [--dir=dir] [--concurrency=concurrency]
+  douyin_downloader.py --version
+
+Options:
+  --dir=dir                    select file save dir. * default: '$HOME/Movies/douyin/'
+  --concurrency=concurrency    select the concurrency number of downloader. [default: 20]
+```
+举例：
+1. `python douyin_downloader.py 84834596404 favorite`
+2. `python douyin_downloader.py --dir=. --concurrency=10 84834596404 favorite`
+
+
+
+# 注释
+
+
+
 ref: 
 1. https://github.com/AppSign/douyin
 2. https://github.com/hacksman/spider_world
@@ -16,7 +41,8 @@ todo:
 9. 下载单个视频
 10. 下载单个视频的音频 -- 还不正确待修正，不知道支持不
 11. 用户的评论信息
-12. 不能每次 get_signed_params 都 getDevice/getToken ，设定时间超时重获取就可以了。
+12. 不能每次 get_signed_params 都 getDevice/getToken ，设定时间超时重获取就可以了。 done
+13. 为了避免重启时重复下载，对于判断依据存在的视频id就不要重复爬取了。
 
 
 本地调试异步下载器的方法：

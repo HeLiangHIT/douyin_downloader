@@ -7,8 +7,6 @@
 from util import *
 
 
-_SAVE_DIR = "%s/Movies/douyin/" % os.path.expanduser('~') # os.environ['HOME']
-
 
 async def get_follow_list(user_id, offset=0, count=20):
     '''获取关注列表举例, 参考 'json_demo/follow_list.py'
@@ -131,7 +129,7 @@ async def _get_favorite_list_test():
     total = 0
     async for video in get_favorite_list("84834596404"):
         video_name = "_".join([video["author_name"], video["author_uid"], trim(video["video_desc"], 20)])
-        logging.info(f"begin download {video_name} to {_SAVE_DIR} ... ")
+        logging.info(f"begin download {video_name} to ./ ... ")
         total += 1
         if total >= 5:
             logging.info("assume we get finished!")
