@@ -56,7 +56,7 @@ func_dict = {
 async def generate_videos(_sender, user, action):
     async for video in func_dict[action](user):
         file_name = "_".join([video["author_name"], video["author_uid"], trim(video["video_desc"], 20)])
-        video['name'] = file_name
+        video['name'] = f"{file_name}.mp4"
         await _sender.send(video)
     await _sender.send(None)
 
