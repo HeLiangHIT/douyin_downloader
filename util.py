@@ -169,17 +169,17 @@ class AsyncDownloader(object):
         if res_time <= 0: # 重试超过了次数
             return None
         try:
-            url = random.choice(url) if isinstance(url, list) else url
-            res = await asks.get(url, headers=headers, timeout=timeout, retries=3)
+            _url = random.choice(url) if isinstance(url, list) else url
+            res = await asks.get(_url, headers=headers, timeout=timeout, retries=3)
         except (socket.gaierror, trio.BrokenResourceError, trio.TooSlowError, asks.errors.RequestTimeout) as e:
             logging.error("download from %s fail]err=%s!" % (url, e))
             await trio.sleep(random.randint(1, 5)) # for scheduler
-            return await self.download_file(url, res_time-1)
+            return await self.download_file(url, res_time=res_time-1)
 
         if res.status_code not in [200, 202]:
             logging.warn(f"download from {url} fail]response={res}")
             await trio.sleep(random.randint(3, 10))
-            return await self.download_file(url, res_time-1)
+            return await self.download_file(url, res_time=res_time-1)
         return res.content
 
     def is_file_downloaded(self, name):

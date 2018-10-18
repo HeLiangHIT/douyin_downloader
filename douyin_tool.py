@@ -47,7 +47,7 @@ async def _get_favorite_list(user_id, max_cursor=0):
         resp = await asks.get(url, params=params, verify=False, headers=IPHONE_HEADER)
         logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
     except (socket.gaierror, ) as e:
-        logging.error(f"get video list fail from {url}!")
+        logging.error(f"get video list fail from {url}]err=%s" % e)
         return [], True, max_cursor
 
     favorite_info = resp.json()
