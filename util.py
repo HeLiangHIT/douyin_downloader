@@ -183,11 +183,13 @@ class AsyncDownloader(object):
         return res.content
 
     def is_file_downloaded(self, name):
+        name = name.replace('/', '_').replace(' ','') # 避免特殊字符导致读写错误
         file_path = os.path.join(self.save_dir, name)
         return os.path.exists(file_path)
 
     # 异步文件保存
     async def save_file(self, name, content):
+        name = name.replace('/', '_').replace(' ','')
         file_path = os.path.join(self.save_dir, name)
         fd = await trio.open_file(file_path, 'wb')
         await fd.write(content)

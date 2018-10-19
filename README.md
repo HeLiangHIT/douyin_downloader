@@ -1,10 +1,5 @@
 
 
-# 参考
-1. https://github.com/AppSign/douyin
-2. https://github.com/hacksman/spider_world
-
-
 # 用法
 查看帮助： python douyin_downloader.py --help
 ```
@@ -38,6 +33,17 @@ Options:
 * [ ] 顺藤摸瓜，爬取自己关注的人发布视频->依次再爬取他们关注的人发布的视频...保存人的信息和视频的信息，然后把整个抖音数据库都扒下来了。注意下载的视频点赞数量需要超过一定比较妥。
 * [ ] 融入美女自动识别等功能（可以参考douyinbot工程）。
 * [ ] 总是出现 socket.gaierror 这个错误，有必要向 asks 作者反馈一下。
+
+
+
+
+# 参考
+[1] https://github.com/AppSign/douyin
+[2] https://github.com/hacksman/spider_world
+[3] https://github.com/python-trio/trio
+[4] https://github.com/theelous3/asks
+
+
 
 
 
