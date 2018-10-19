@@ -23,6 +23,11 @@ Options:
 2. `python douyin_downloader.py --dir=. --concurrency=10 84834596404 favorite`
 
 
+下载过程和结果展示：
+
+![下载中...](img/downloading.png)
+![下载结果](img/result.png)
+
 
 ## TODO
 * [ ] 下载 评论 "https://aweme.snssdk.com/aweme/v1/comment/list/" 的内容。
