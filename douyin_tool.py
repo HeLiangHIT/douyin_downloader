@@ -8,6 +8,34 @@ from util import *
 
 
 
+async def get_main_page(user_id, count=6):
+    '''爬取主页视频内容内容
+    >>> resp = trio.run(get_main_page, "84834596404")
+    >>> print(resp['status_code'])
+    0
+    '''
+    url = "https://aweme.snssdk.com/aweme/v1/feed/"
+    feed_param = {
+        "ac":           "WIFI",
+        "count":        str(count),
+        "feed_style":   "0",
+        "filter_warn":  "0",
+        "filter_warn":  "0",
+        "max_cursor":   "0",
+        "min_cursor":   "0",
+        "pull_type":    "1",
+        "type":         "0",
+        "volume":       "0.00"
+    }
+    try:
+        params = await get_signed_params(feed_param)
+        resp = await asks.get(url, params=params, headers=IPHONE_HEADER)
+        logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
+    except Exception as e:
+        logging.error(f"get follow list fail from {url}]err=%s" % e)
+        return {"status_code": -1}
+    return resp.json()
+
 
 
 
@@ -237,7 +265,5 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=False)  # verbose=True shows the output
     logging.info("doctest finished.")
-
-
 
 
