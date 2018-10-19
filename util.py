@@ -12,7 +12,7 @@ ref2: https://github.com/hacksman/spider_world 抖音爬虫例子
 import trio, asks, logging, json, time, os, arrow, socket, random
 asks.init('trio')
 
-logging.basicConfig(level=logging.INFO, 
+logging.basicConfig(level=logging.DEBUG, 
     format='%(asctime)s %(filename)s:%(lineno)d %(threadName)s:%(funcName)s %(levelname)s] %(message)s')
 IPHONE_HEADER = {"User-Agent": "Aweme/2.8.0 (iPhone; iOS 11.0; Scale/2.00)"}
 DOWNLOAD_TIMEOUT = 600
@@ -148,10 +148,10 @@ async def _get_sign_params(force = False):
     return _available['common_params'], _available['token']
 
 
-async def get_signed_params(params):
+async def get_signed_params(params, force = False):
     '''给请求 params 签名'''
     assert isinstance(params, dict)
-    common_params, token = await _get_sign_params()
+    common_params, token = await _get_sign_params(force)
     query_params = {**params, ** common_params}
     signed, _ = await get_sign(token, query_params)
     return {**query_params, **signed}

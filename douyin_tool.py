@@ -8,9 +8,13 @@ from util import *
 
 
 
-async def get_follow_list(user_id, offset=0, count=20):
+
+
+
+
+async def _get_follow_list(user_id, offset=0, count=20):
     '''获取关注列表举例, 参考 'json_demo/follow_list.py'
-    >>> follow_list = trio.run(get_follow_list, "84834596404", "0", "20")
+    >>> follow_list, _, _ = trio.run(_get_follow_list, "84834596404", 0, 20)
     >>> print(len(follow_list))
     20
     '''
@@ -27,10 +31,45 @@ async def get_follow_list(user_id, offset=0, count=20):
         params = await get_signed_params(follow_para)
         resp = await asks.get(url, params=params, verify=False, headers=IPHONE_HEADER)
         logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
-        return resp.json()['followings']
     except Exception as e:
         logging.error(f"get follow list fail from {url}]err=%s" % e)
-        return []
+        return [], False, offset
+
+    follow_info = resp.json()
+    follow_list = follow_info.get('followings', [])
+    hasmore = follow_info.get('has_more', False)
+    # hasmore = follow_info.get('total', 0) > (offset + count)
+    
+    return follow_list, hasmore, offset + count
+
+async def get_follow_list(user_id, offset=0, repeat_func=None):
+    '''爬取指定用户的所有关注的用户列表 async for video in get_follow_list(uid): ...
+    第二次post返回都是失败， post 缺少什么必要参数呢？'''
+    total = 0
+    while True:
+        follow_list, hasmore, offset = await _get_follow_list(user_id, offset, count=20)
+        for follow in follow_list:
+            user_id = follow.get('uid', None)
+            nickname = follow.get('nickname', '')
+            signature = follow.get('signature', '')
+            birthday = follow.get('birthday', '')
+            total += 1
+            yield {'user_id':user_id, 'nickname':nickname, 'signature':signature, 'birthday':birthday,}
+        if not hasmore:
+            logging.info(f"get follow list finished, there are total {total} people followed by user_id={user_id}!")
+            # raise StopIteration # ref: https://www.python.org/dev/peps/pep-0479/  or  https://stackoverflow.com/questions/51700960/runtimeerror-generator-raised-stopiteration-everytime-i-try-to-run-app
+            return
+
+async def _get_follow_list_test():
+    '''测试 get_follow_list_test 是否正确
+    >>> print(trio.run(_get_follow_list_test))
+    20
+    '''
+    total = 0
+    async for people in get_follow_list("84834596404", 20):
+        logging.info(f"begin to get video_list of {people} ... ")
+        total += 1
+    return total
 
 
 async def _get_video_list(url, user_id, max_cursor=0):
@@ -98,7 +137,6 @@ async def _get_music_url(music_id):
     url = f"https://p3.pstatp.com/obj/{music_id}"
     return url
 
-
 async def _parse_video_info(video, repeat_func=None):
     '''解析视频关键信息
     >>> video_list, _, _ = trio.run(_get_favorite_list, "84834596404", 0)
@@ -148,7 +186,6 @@ async def get_favorite_list(user_id, max_cursor=0, repeat_func=None):
             yield video_item
         if not hasmore:
             logging.info(f"get favorite list finished, there are total {total} videos for user_id={user_id}!")
-            # raise StopIteration # ref: https://www.python.org/dev/peps/pep-0479/  or  https://stackoverflow.com/questions/51700960/runtimeerror-generator-raised-stopiteration-everytime-i-try-to-run-app
             return
 
 async def _get_favorite_list_test():
@@ -200,7 +237,7 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=False)  # verbose=True shows the output
     logging.info("doctest finished.")
-    
+
 
 
 
