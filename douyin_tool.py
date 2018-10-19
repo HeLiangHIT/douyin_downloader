@@ -37,6 +37,28 @@ async def get_main_page(user_id, count=6):
     return resp.json()
 
 
+async def search_web(keyword, count=12, offset=0):
+    '''搜索内容
+    >>> resp = trio.run(search_web, "美女")
+    >>> print(resp['status_code'])
+    0
+    '''
+    url = "https://api.amemv.com/aweme/v1/general/search/"
+    feed_param = {
+        "ac":       "WIFI",
+        "count":    str(count),
+        "keyword":  keyword,
+        "offset":   str(offset)
+    }
+    try:
+        params = await get_signed_params(feed_param)
+        resp = await asks.get(url, params=params, headers=IPHONE_HEADER)
+        logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
+    except Exception as e:
+        logging.error(f"search from {url}]err=%s" % e)
+        return {"status_code": -1}
+    return resp.json()
+
 
 
 
