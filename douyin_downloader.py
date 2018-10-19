@@ -62,7 +62,7 @@ async def generate_videos(_sender, user, action, repeat_func):
 # 主函数
 async def main(user, action, save_dir, concurrency):
     logging.info(f"start download favorite video to {save_dir} with {concurrency} concurrency ...")
-    downloader = AsyncDownloader(f"{save_dir}/{action}")
+    downloader = AsyncDownloader(f"{save_dir}/{user}/{action}")
 
     async with trio.open_nursery() as nursery:
         _sender, _receiver = trio.open_memory_channel(concurrency) # 并行数量
