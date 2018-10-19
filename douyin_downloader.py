@@ -29,9 +29,9 @@ async def download_videos(_receiver, downloader):
     while True:
         async for video in _receiver:
             # video = await _receiver.receive() # may get repeated tail
-            url = video['video_url']
             if video is None:
                 return # 结束下载
+            url = video['video_url']
             if downloader.is_file_downloaded(video['name']) or url is None:
                 logging.info(f"{video['name']} is already downloaded or expired!")
                 continue
