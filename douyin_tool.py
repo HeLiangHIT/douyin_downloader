@@ -29,10 +29,10 @@ async def get_main_page(user_id, count=6):
     }
     try:
         params = await get_signed_params(feed_param)
-        resp = await asks.get(url, params=params, headers=IPHONE_HEADER)
+        resp = await asks.get(url, params=params, verify=False, headers=IPHONE_HEADER)
         logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
     except Exception as e:
-        logging.error(f"get follow list fail from {url}]err=%s" % e)
+        logging.error(f"get main page fail from {url}]err=%s" % e)
         return {"status_code": -1}
     return resp.json()
 
@@ -52,33 +52,57 @@ async def search_web(keyword, count=12, offset=0):
     }
     try:
         params = await get_signed_params(search_param)
-        resp = await asks.get(url, params=params, headers=IPHONE_HEADER)
+        resp = await asks.get(url, params=params, verify=False, headers=IPHONE_HEADER)
         logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
     except Exception as e:
-        logging.error(f"search from {url}]err=%s" % e)
+        logging.error(f"search from {url} fail]err=%s" % e)
         return {"status_code": -1}
     return resp.json()
 
 
 async def get_user_info(user_id):
-    '''搜索内容
+    '''获取用户详细信息
     >>> resp = trio.run(get_user_info, "84834596404")
     >>> print(resp['status_code'])
     0
     '''
     url = "https://aweme.snssdk.com/aweme/v1/user/"
-    feed_param = {
+    user_params = {
         "ac": "WIFI",
         "user_id": user_id,
     }
     try:
-        params = await get_signed_params(feed_param)
-        resp = await asks.get(url, params=params, headers=IPHONE_HEADER)
+        params = await get_signed_params(user_params)
+        resp = await asks.get(url, params=params, verify=False, headers=IPHONE_HEADER)
         logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
     except Exception as e:
-        logging.error(f"search from {url}]err=%s" % e)
+        logging.error(f"get user info from {url} fail]err=%s" % e)
         return {"status_code": -1}
     return resp.json()
+
+
+async def like_video(aweme_id):
+    '''喜欢一个视频： 为啥会失败呢？错误码8是什么意思？
+    >>> resp = trio.run(like_video, "6613913455902592259")
+    >>> print(resp['status_code'])
+    8
+    '''
+    url = "https://aweme.snssdk.com/aweme/v1/commit/item/digg/"
+    like_params = {
+        "pass-region": "1",
+        "aweme_id": aweme_id,
+        "type": 1,
+    }
+    try:
+        params = await get_signed_params(like_params)
+        resp = await asks.post(url, params=params, data=like_params, verify=False, 
+            headers={**IPHONE_HEADER, "sdk-version": "1", "Accept-Encoding": 'br, gzip, deflate'})
+        logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
+    except Exception as e:
+        logging.error(f"like video to {url} fail]err=%s" % e)
+        return {"status_code": -1}
+    return resp.json()
+
 
 
 
@@ -187,7 +211,7 @@ async def _get_post_list(user_id, max_cursor=0):
 
 
 async def _get_video_url(aweme_id):
-    '''获取视频地址，可以直接使用 asks.get(video_url, headers=IPHONE_HEADER, verify=False) 下载视频'''
+    '''获取视频地址，可以直接使用 asks.get(video_url, verify=False, headers=IPHONE_HEADER, verify=False) 下载视频'''
     url = "https://aweme.snssdk.com/aweme/v1/aweme/detail/"
     video_para = post_data = {'aweme_id': aweme_id}
     try:
@@ -203,7 +227,7 @@ async def _get_video_url(aweme_id):
         return None
 
 async def _get_music_url(music_id):
-    '''获取音频地址，可以直接使用 asks.get(music_url, headers=IPHONE_HEADER, verify=False) 下载视频'''
+    '''获取音频地址，可以直接使用 asks.get(music_url, verify=False, headers=IPHONE_HEADER, verify=False) 下载视频'''
     url = f"https://p3.pstatp.com/obj/{music_id}"
     return url
 

@@ -27,7 +27,6 @@ Options:
 ref: 
 1. https://github.com/AppSign/douyin
 2. https://github.com/hacksman/spider_world
-3. picture_scrapy/picture_downloader.py
 
 todo:
 1. 异步下载器： 实现到 util.py 里面 -- done
@@ -38,12 +37,13 @@ todo:
 6. 拉取指定用户个人信息 userInfo.py
 7. 下载该用户所有视频
 8. 下载该用户所有视频和音频
-9. 下载单个视频
-10. 下载单个视频的音频 -- 还不正确待修正，不知道支持不
+9. 下载单个视频  -- done
+10. 下载单个视频的音频 -- 还不正确待修正，不知道支持不 -- don't need
 11. 用户的评论信息
 12. 不能每次 get_signed_params 都 getDevice/getToken ，设定时间超时重获取就可以了。 done
 13. 为了避免重启时重复下载，对于判断依据存在的视频id就不要重复爬取了。
 14. 总是出现 socket.gaierror 这个错误，有必要向 asks 作者反馈一下。
+15. 抽象 douyin_tool.py 里面的下载函数（通过传递params和url来实现下载即可），地址管理方式（使用字典抽象动作+地址）。
 
 
 本地调试异步下载器的方法：
