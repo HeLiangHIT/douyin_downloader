@@ -44,11 +44,32 @@ async def search_web(keyword, count=12, offset=0):
     0
     '''
     url = "https://api.amemv.com/aweme/v1/general/search/"
-    feed_param = {
+    search_param = {
         "ac":       "WIFI",
         "count":    str(count),
         "keyword":  keyword,
-        "offset":   str(offset)
+        "offset":   str(offset),
+    }
+    try:
+        params = await get_signed_params(search_param)
+        resp = await asks.get(url, params=params, headers=IPHONE_HEADER)
+        logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
+    except Exception as e:
+        logging.error(f"search from {url}]err=%s" % e)
+        return {"status_code": -1}
+    return resp.json()
+
+
+async def get_user_info(user_id):
+    '''搜索内容
+    >>> resp = trio.run(get_user_info, "84834596404")
+    >>> print(resp['status_code'])
+    0
+    '''
+    url = "https://aweme.snssdk.com/aweme/v1/user/"
+    feed_param = {
+        "ac": "WIFI",
+        "user_id": user_id,
     }
     try:
         params = await get_signed_params(feed_param)
@@ -58,7 +79,6 @@ async def search_web(keyword, count=12, offset=0):
         logging.error(f"search from {url}]err=%s" % e)
         return {"status_code": -1}
     return resp.json()
-
 
 
 
@@ -287,5 +307,4 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=False)  # verbose=True shows the output
     logging.info("doctest finished.")
-
 
