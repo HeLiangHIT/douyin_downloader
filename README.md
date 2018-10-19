@@ -30,11 +30,11 @@ ref:
 3. picture_scrapy/picture_downloader.py
 
 todo:
-1. 异步下载器： 实现到 util.py 里面即可？
+1. 异步下载器： 实现到 util.py 里面 -- done
 2. 下载 __COMMENT_URL= "https://aweme.snssdk.com/aweme/v1/comment/list/" 的内容
 3. 爬取首页视频: feed.py
 4. 视频搜索: search.py
-5. 视频下载 无水印 downloadVideo.py
+5. 视频下载 无水印 downloadVideo.py -- done
 6. 拉取指定用户个人信息 userInfo.py
 7. 下载该用户所有视频
 8. 下载该用户所有视频和音频

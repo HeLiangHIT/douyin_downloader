@@ -33,14 +33,11 @@ async def get_follow_list(user_id, offset=0, count=20):
         return []
 
 
-async def _get_favorite_list(user_id, max_cursor=0):
-    '''抓取我喜欢的视频列表, 参考 'json_demo/video_list.py'
-    >>> video_list, _, _ = trio.run(_get_favorite_list, "84834596404", 0)
-    >>> print(len(video_list))
-    20
+async def _get_video_list(url, user_id, max_cursor=0):
+    '''获取视频列表
+    # url = "https://aweme.snssdk.com/aweme/v1/aweme/favorite/" # 用户喜欢的视频
+    # url = "https://aweme.snssdk.com/aweme/v1/aweme/post/" # 用户发布的视频
     '''
-    url = "https://aweme.snssdk.com/aweme/v1/aweme/favorite/" # 用户喜欢的视频
-    # url =  https://aweme.snssdk.com/aweme/v1/aweme/post/ # 用户发布的视频
     favorite_para = {
         "count": "21",
         "user_id": user_id,
@@ -55,11 +52,29 @@ async def _get_favorite_list(user_id, max_cursor=0):
         return [], True, max_cursor
 
     favorite_info = resp.json()
-    video_list = favorite_info.get('aweme_list')
-    hasmore = favorite_info.get('has_more')
-    max_cursor = favorite_info.get('max_cursor')
+    video_list = favorite_info.get('aweme_list', [])
+    hasmore = favorite_info.get('has_more', False)
+    max_cursor = favorite_info.get('max_cursor', max_cursor)
     
     return video_list, hasmore, max_cursor
+
+
+async def _get_favorite_list(user_id, max_cursor=0):
+    '''抓取我喜欢的视频列表, 参考 'json_demo/video_list.py'
+    >>> video_list, _, _ = trio.run(_get_favorite_list, "84834596404", 0)
+    >>> print(len(video_list))
+    19
+    '''
+    return await _get_video_list("https://aweme.snssdk.com/aweme/v1/aweme/favorite/", user_id, max_cursor)
+
+
+async def _get_post_list(user_id, max_cursor=0):
+    '''抓取我发布的视频列表, 参考 'json_demo/video_list.py'
+    >>> video_list, _, _ = trio.run(_get_post_list, "84834596404", 0)
+    >>> print(len(video_list))
+    0
+    '''
+    return await _get_video_list("https://aweme.snssdk.com/aweme/v1/aweme/post/", user_id, max_cursor)
 
 
 async def _get_video_url(aweme_id):
@@ -136,7 +151,6 @@ async def get_favorite_list(user_id, max_cursor=0, repeat_func=None):
             # raise StopIteration # ref: https://www.python.org/dev/peps/pep-0479/  or  https://stackoverflow.com/questions/51700960/runtimeerror-generator-raised-stopiteration-everytime-i-try-to-run-app
             return
 
-
 async def _get_favorite_list_test():
     '''测试 get_favorite_list_test 是否正确，这里只抓几个做测试
     >>> print(trio.run(_get_favorite_list_test))
@@ -150,8 +164,36 @@ async def _get_favorite_list_test():
         if total >= 5:
             logging.info("assume we get finished!")
             return total
+    return total
 
 
+async def get_post_list(user_id, max_cursor=0, repeat_func=None):
+    '''爬取指定用户的所有发布视频列表，返回各个视频要下载需要的所有信息，请使用 async for video in get_post_list(uid): ...'''
+    total = 0
+    while True:
+        video_list, hasmore, max_cursor = await _get_post_list(user_id, max_cursor)
+        for video in video_list:
+            video_item = await _parse_video_info(video, repeat_func)
+            total += 1
+            yield video_item
+        if not hasmore:
+            logging.info(f"get post list finished, there are total {total} videos for user_id={user_id}!")
+            return
+
+async def _get_post_list_test():
+    '''测试 get_post_list_test 是否正确，这里只抓几个做测试
+    >>> print(trio.run(_get_post_list_test))
+    0
+    '''
+    total = 0
+    async for video in get_post_list("84834596404"):
+        video_name = "_".join([video["author_name"], video["author_uid"], trim(video["video_desc"], 20)])
+        logging.info(f"begin download {video_name} to ./ ... ")
+        total += 1
+        if total >= 5:
+            logging.info("assume we get finished!")
+            return total
+    return total
 
 
 if __name__ == '__main__':
