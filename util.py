@@ -12,7 +12,7 @@ ref2: https://github.com/hacksman/spider_world 抖音爬虫例子
 import trio, asks, logging, json, time, os, arrow, socket, random
 asks.init('trio')
 
-logging.basicConfig(level=logging.DEBUG, 
+logging.basicConfig(level=logging.INFO, 
     format='%(asctime)s %(filename)s:%(lineno)d %(threadName)s:%(funcName)s %(levelname)s] %(message)s')
 IPHONE_HEADER = {"User-Agent": "Aweme/2.8.0 (iPhone; iOS 11.0; Scale/2.00)"}
 DOWNLOAD_TIMEOUT = 600

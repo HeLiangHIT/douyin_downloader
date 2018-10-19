@@ -22,8 +22,6 @@ from docopt import docopt
 
 # 默认配置参数
 _SAVE_DIR = "%s/Movies/douyin/" % os.path.expanduser('~') # os.environ['HOME']
-logging.basicConfig(level=logging.DEBUG, 
-    format='%(asctime)s %(filename)s:%(lineno)d %(threadName)s:%(funcName)s %(levelname)s] %(message)s')
 
 
 # 生产-消费 流程 的消费者 _receiver
