@@ -133,7 +133,8 @@ async def get_favorite_list(user_id, max_cursor=0, repeat_func=None):
             yield video_item
         if not hasmore:
             logging.info(f"get favorite list finished, there are total {total} videos for user_id={user_id}!")
-            raise StopIteration()
+            # raise StopIteration # ref: https://www.python.org/dev/peps/pep-0479/  or  https://stackoverflow.com/questions/51700960/runtimeerror-generator-raised-stopiteration-everytime-i-try-to-run-app
+            return
 
 
 async def _get_favorite_list_test():

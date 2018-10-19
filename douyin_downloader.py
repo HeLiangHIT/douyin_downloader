@@ -34,7 +34,7 @@ async def download_videos(_receiver, downloader):
             if video is None:
                 return # 结束下载
             if downloader.is_file_downloaded(video['name']) or url is None:
-                logging.info(f"{video['name']} is already downloaded/expired!")
+                logging.info(f"{video['name']} is already downloaded or expired!")
                 continue
             
             logging.debug(f"downloading {url} ... ")
