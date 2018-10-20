@@ -44,6 +44,7 @@ Options:
   --dir=dir                    select file save dir. * default: '$HOME/Movies/douyin/'
   --concurrency=concurrency    select the concurrency number of downloader. [default: 20]
 ```
+> 关于用户 user_id 的获取， 参考 https://github.com/hacksman/spider_world 的介绍。
 
 
 举例：
