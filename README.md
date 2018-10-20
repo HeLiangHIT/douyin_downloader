@@ -28,10 +28,11 @@ a8"    `Y88 a8"     "8a `8b    d88b    d8' 88P'   `"8a 88 a8"     "8a ""     `Y8
 查看帮助： `python douyin_downloader.py --help`
 
 ```
-抖音下载器: 异步下载抖音视频
+抖音下载器: 异步下载抖音视频。 follow 参数用于指定是否是下载关注的用户视频。
 
 Usage:
-  douyin_downloader.py user action [--dir=dir] [--concurrency=concurrency]
+  douyin_downloader.py [--dir=dir] [--concurrency=concurrency] [--follow=follow] <user> <action> follow
+  douyin_downloader.py [--dir=dir] [--concurrency=concurrency] [--follow=follow] <user> <action>
   douyin_downloader.py --version
 
 Options:
@@ -42,9 +43,9 @@ Options:
 
 举例：
 
-1. `python douyin_downloader.py 84834596404 favorite`
-2. `python douyin_downloader.py --dir=. --concurrency=10 84834596404 favorite`
-3. `python douyin_downloader.py 84838778760 favorite`
+1. `python douyin_downloader.py 84834596404 favorite` 下载用户 84834596404 喜欢过的视频。
+2. `python douyin_downloader.py --dir=. --concurrency=10 84834596404 post` 下载用户 84834596404 上传的视频。
+3. `python douyin_downloader.py 84838778760 favorite follow` 下载用户 84838778760 关注的用户喜欢过的视频。
 
 
 下载过程和结果展示：
@@ -55,8 +56,8 @@ Options:
 
 ## TODO
 
-* [ ] 下载 评论 "https://aweme.snssdk.com/aweme/v1/comment/list/" 的内容。
-* [ ] 为了避免重复下载，可以将下载过的视频id/用户id保存到redis中防止重复爬一个用户的内容，如果redis中存在视频信息就不要再下载了，如果redis中存在用户信息的话就直接取走了就好了。
+* [X] 下载 评论 "https://aweme.snssdk.com/aweme/v1/comment/list/" 的内容。
+* [O] 为了避免重复下载，可以将下载过的视频id/用户id保存到redis/本地防止重复爬一个用户的内容，如果redis中存在视频信息就不要再下载了，如果redis中存在用户信息的话就直接取走了就好了。
 * [ ] 抽象 douyin_tool.py 里面的下载函数（通过传递params和url来实现下载即可），地址管理方式（使用字典抽象动作+地址）。
 * [ ] 新增下载所有自己关注的账号的视频。
 * [ ] 下载点击量超过1w的视频类似的功能。

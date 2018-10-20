@@ -5,16 +5,16 @@
 # @Link    : https://github.com/HeLiangHIT
 
 '''
-抖音下载器: 异步下载抖音视频
+抖音下载器: 异步下载抖音视频。 follow 参数用于指定是否是下载关注的用户视频。
 
 Usage:
-  douyin_downloader.py [--dir=dir] [--concurrency=concurrency] <user> <action>
+  douyin_downloader.py [--dir=dir] [--concurrency=concurrency] [--follow=follow] <user> <action> follow
+  douyin_downloader.py [--dir=dir] [--concurrency=concurrency] [--follow=follow] <user> <action>
   douyin_downloader.py --version
 
 Options:
   --dir=dir                    select file save dir. * default: '$HOME/Movies/douyin/'
   --concurrency=concurrency    select the concurrency number of downloader. [default: 20]
-
 '''
 
 from douyin_tool import *
@@ -53,20 +53,10 @@ async def generate_videos(_sender, func_dict, user, action, repeat_func):
     await _sender.send(None)
 
 
-# 主函数
-async def main(user, action, save_dir, concurrency):
-    '''主函数'''
-    dy = DouyinTool()
-    func_dict = {
-        "favorite" : dy.get_favorite_list,
-        "post" : dy.get_post_list,
-    }
-    if action not in func_dict.keys():
-        logging.critical(f"action={action} is not supported!")
-    if not user.isdigit():
-        logging.critical(f"user={user} is illegal!")
-
-    logging.info(f"start download favorite video to {save_dir} with {concurrency} concurrency ...")
+# 爬取单个用户的视频
+async def crawler_user_video(user, func_dict, action, save_dir, concurrency):
+    '''下载指定用户指定的'''
+    logging.info(f"start download {user}'s favorite video to {save_dir} with {concurrency} concurrency ...")
     downloader = AsyncDownloader(f"{save_dir}/{user}/{action}")
 
     async with trio.open_nursery() as nursery:
@@ -74,7 +64,33 @@ async def main(user, action, save_dir, concurrency):
         nursery.start_soon(generate_videos, _sender, func_dict, user, action, downloader.is_file_downloaded)
         nursery.start_soon(download_videos, _receiver, downloader)
 
-    logging.info("file downloads over!")
+    logging.info(f"video for user with user_id={user} downloads finished!")
+
+
+# 主函数
+async def main(user, action, follow, save_dir, concurrency):
+    dy = DouyinTool()
+    func_dict = {
+        "favorite" : dy.get_favorite_list,
+        "post" : dy.get_post_list,
+    }
+
+    if action not in func_dict.keys():
+        logging.critical(f"action={action} is not supported!")
+    if not user.isdigit():
+        logging.critical(f"user={user} is illegal!")
+
+    if follow:
+        user_ids = set()
+        async for people in dy.get_follow_list(user):
+            user_ids.add(people['user_id'])
+        logging.info(f"there are {len(user_ids)} followed users need for crawler, let's begin!")
+        for _user in user_ids:
+            await crawler_user_video(_user, func_dict, action, save_dir, concurrency)
+    else:
+        await crawler_user_video(user, func_dict, action, save_dir, concurrency)
+
+    logging.info("all videos are downloaded! congratulations!!!")
 
 
 if __name__ == '__main__':
@@ -83,7 +99,8 @@ if __name__ == '__main__':
     concurrency = int(arguments["--concurrency"])
     user = arguments['<user>']
     action = arguments['<action>']
-    trio.run(main, user, action, save_dir, concurrency)
+    follow = arguments['follow'] # True if set, else False
+    trio.run(main, user, action, follow, save_dir, concurrency)
 
 
 
