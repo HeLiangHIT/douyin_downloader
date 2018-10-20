@@ -112,7 +112,7 @@ class DouyinTool(object):
             headers={**IPHONE_HEADER, "sdk-version": "1", "Accept-Encoding": 'br, gzip, deflate'})
         return resp.json() if resp is not None else {"status_code": -1}
 
-    async def _get_follow_list(self, user_id, offset=0):
+    async def _get_follow_list(self, user_id, offset=0, min_time=None, max_time=int(time.time())):
         '''获取关注列表举例, 参考 'json_demo/follow_list.json'
         >>> follow_list, _, _ = trio.run(DouyinTool()._get_follow_list, "84834596404", 0)
         >>> print(len(follow_list))
@@ -124,7 +124,8 @@ class DouyinTool(object):
             "offset": str(offset),
             "count": str(20),
             "source_type": "2",
-            "max_time": int(time.time()),
+            # "min_time": str(min_time),
+            "max_time": str(max_time),
             "ac": "WIFI",
         }
         resp = await self.sign_util.curl(url, follow_para)
@@ -133,24 +134,30 @@ class DouyinTool(object):
 
         follow_info = resp.json()
         follow_list = follow_info.get('followings', [])
-        hasmore = follow_info.get('has_more', False)
-        # hasmore = follow_info.get('total', 0) > (offset + count)
-        
-        return follow_list, hasmore, offset + count
+        # hasmore = follow_info.get('has_more', False) # always be true
+        hasmore = follow_info.get('total', 0) > (offset + 20)
+
+        return follow_list, hasmore, offset + 20, follow_info.get('min_time', min_time), follow_info.get('max_time', int(max_time))
 
     async def get_follow_list(self, user_id, offset=0, repeat_func=None):
         '''爬取指定用户的所有关注的用户列表 async for video in get_follow_list(uid): ...
         第二次post返回都是失败， post 缺少什么必要参数呢？'''
         total = 0
+        min_time=int(time.time())
+        max_time=int(time.time())
         while True:
-            follow_list, hasmore, offset = await self._get_follow_list(user_id, offset)
+            follow_list, hasmore, offset, min_time, max_time = await self._get_follow_list(user_id, offset, min_time, max_time)
+            # print(len(follow_list), hasmore, offset)
             for follow in follow_list:
-                user_id = follow.get('uid', None)
+                uid = follow.get('uid', None)
                 nickname = follow.get('nickname', '')
                 signature = follow.get('signature', '')
                 birthday = follow.get('birthday', '')
+                # if uid == '92654947278' or nickname == '已重置':
+                #     # 测试发现这个号并没有什么卵用，而且并不是关注的用户
+                #     continue
                 total += 1
-                yield {'user_id':user_id, 'nickname':nickname, 'signature':signature, 'birthday':birthday,}
+                yield {'user_id':uid, 'nickname':nickname, 'signature':signature, 'birthday':birthday,}
             if not hasmore:
                 logging.info(f"get follow list finished, there are total {total} people followed by user_id={user_id}!")
                 # raise StopIteration # ref: https://www.jsonthon.org/dev/peps/pep-0479/  or  https://stackoverflow.com/questions/51700960/runtimeerror-generator-raised-stopiteration-everytime-i-try-to-run-app
@@ -274,12 +281,15 @@ class DouyinTool(object):
 async def _get_follow_list_test():
     '''测试 get_follow_list_test 是否正确
     >>> print(trio.run(_get_follow_list_test))
-    20
+    5
     '''
     total = 0
-    async for people in DouyinTool().get_follow_list("84834596404", 20):
-        logging.info(f"begin to get video_list of {people} ... ")
+    async for people in DouyinTool().get_follow_list("84834596404", 0):
+        logging.info(f"begin to parser {total}-th {people['nickname']} ... ")
         total += 1
+        if total >= 5:
+            logging.info("assume we get finished!")
+            return total
     return total
 
 
@@ -291,7 +301,7 @@ async def _get_favorite_list_test():
     total = 0
     async for video in DouyinTool().get_favorite_list("84834596404"):
         video_name = "_".join([video["author_name"], video["author_uid"], trim(video["video_desc"], 20, '')])
-        logging.info(f"begin download {video_name} to ./ ... ")
+        logging.info(f"begin download {total}-th {video_name} to ./ ... ")
         total += 1
         if total >= 5:
             logging.info("assume we get finished!")
@@ -307,7 +317,7 @@ async def _get_post_list_test():
     total = 0
     async for video in DouyinTool().get_post_list("84834596404"):
         video_name = "_".join([video["author_name"], video["author_uid"], trim(video["video_desc"], 20)])
-        logging.info(f"begin download {video_name} to ./ ... ")
+        logging.info(f"begin download {total}-th {video_name} to ./ ... ")
         total += 1
         if total >= 5:
             logging.info("assume we get finished!")
@@ -315,12 +325,7 @@ async def _get_post_list_test():
     return total
 
 
-
-
-
 if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=False)  # verbose=True shows the output
     logging.info("doctest finished.")
-
-
