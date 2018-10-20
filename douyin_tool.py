@@ -180,7 +180,7 @@ async def _get_video_list(url, user_id, max_cursor=0):
         params = await get_signed_params(favorite_para)
         resp = await asks.get(url, params=params, verify=False, headers=IPHONE_HEADER)
         logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
-    except (socket.gaierror, ) as e:
+    except Exception as e:
         logging.error(f"get video list fail from {url}]err=%s" % e)
         return [], True, max_cursor
 

@@ -141,7 +141,7 @@ async def _get_sign_params(force = False):
     logging.debug(f"new sign params generated, last time is {_available['expired']}")
 
     _available = {
-        "expired" : arrow.utcnow().shift(minutes=50), # 实测貌似很快就失效了
+        "expired" : arrow.utcnow().shift(minutes=5), # 实测貌似很快就失效了
         "common_params" : common_params,
         "token" : token
     }
