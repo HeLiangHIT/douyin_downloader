@@ -74,6 +74,7 @@ class SignUtil(object):
         super(SignUtil, self).__init__()
         self.version = version
         self.sign = {"expired": arrow.Arrow(2000, 1, 1, 0, 0, 0), "common_params": None, "token":None}
+        self.s = asks.Session(_API, connections=5)
         
     async def get_token(self):
         '''获取Token: 有效期60分钟
@@ -87,7 +88,7 @@ class SignUtil(object):
         32
         '''
         url = f"{_API}/token/douyin/version/{self.version}" if self.version else f"{_API}/token/douyin"
-        resp = await asks.get(url)
+        resp = await self.s.get(url)
         logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
         return resp.json().get('token', None)
 
@@ -116,7 +117,7 @@ class SignUtil(object):
         iPhone8,1
         '''
         url = f"{_API}/douyin/device/new/version/{self.version}" if self.version else "{_API}/douyin/device/new"
-        resp = await asks.get(url)
+        resp = await self.s.get(url)
         logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
         return resp.json().get('data', None)
 
@@ -133,7 +134,7 @@ class SignUtil(object):
         '''
         assert isinstance(query, dict)
         url = f"{_API}/sign"
-        resp = await asks.post(url, json={"token": token, "query": params2str(query)})
+        resp = await self.s.post(url, json={"token": token, "query": params2str(query)})
         logging.debug(f"post response from {url} is {resp} with body: {trim(resp.text)}")
         return resp.json().get('data', None), resp.json()
 
@@ -171,9 +172,9 @@ class SignUtil(object):
         try:
             s_params = await self.get_signed_params(params)
             if method.upper() == 'GET':
-                resp = await asks.get(url, params=s_params, data=data, headers=IPHONE_HEADER, verify=False, timeout=timeout)
+                resp = await self.s.get(url, params=s_params, data=data, headers=IPHONE_HEADER, verify=False, timeout=timeout)
             elif method.upper() == 'POST':
-                resp = await asks.post(url, params=s_params, data=data, headers=IPHONE_HEADER, verify=False, timeout=timeout)
+                resp = await self.s.post(url, params=s_params, data=data, headers=IPHONE_HEADER, verify=False, timeout=timeout)
             else:
                 logging.error(f"undefined method={method} for url={url}")
                 return None
@@ -182,6 +183,7 @@ class SignUtil(object):
         except Exception as e:
             logging.warning(f"curl {url} with method={method} failed, retry with new signed params!")
             await self.get_sign_params(True) # force fresh self.sign
+            self.s = asks.Session(_API, connections=5) # restart session
             return await self.curl(url, params, data, headers, method, retries-1)
 
 
