@@ -167,7 +167,7 @@ class SignUtil(object):
     async def curl(self, url, params, data=None, headers=IPHONE_HEADER, method='GET', retries=2, timeout=CURL_TIMEOUT):
         '''抖音的签名请求函数'''
         if retries <= 0:
-            llogging.error(f"curl {url} with method={method} failed, return None!")
+            logging.error(f"curl {url} with method={method} failed, return None!")
             return None
         try:
             s_params = await self.get_signed_params(params)
