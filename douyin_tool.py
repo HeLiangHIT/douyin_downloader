@@ -65,6 +65,37 @@ class DouyinTool(object):
         resp = await self.sign_util.curl(url, user_params)
         return resp.json() if resp is not None else {"status_code": -1}
 
+    async def get_comments(self, aweme_id, cursor=0):
+        '''获取视频评论
+        >>> comments, _, _ = trio.run(DouyinTool().get_comments, "6610186359145499912", 0)
+        >>> print(len(comments) > 0)
+        True
+        '''
+        url = "https://aweme.snssdk.com/aweme/v1/comment/list/"
+        comment_params = {
+            "count": str(20),
+            "cursor": str(cursor),
+            "comment_style": '2',
+            "aweme_id": aweme_id,
+            "digged_cid": "",
+        }
+        resp = await self.sign_util.curl(url, comment_params)
+        comments_res = resp.json() if resp is not None else {"status_code": -1}
+        hasmore = comments_res.get("hasmore", False)
+        cursor = comments_res.get("cursor", cursor)
+        comments = comments_res.get("comments", [])
+        # for comment in comments:
+        #     real_comment = comment.get("reply_comment")[0] if comment.get("reply_comment") else comment
+        #     upvote_count = real_comment.get("digg_count")
+        #     comment_item = {
+        #         "aweme_id" : aweme_id,
+        #         "text": real_comment.get("text", ''),
+        #         "upvote_count": upvote_count,
+        #         "nick_name": real_comment['user'].get("nickname"),
+        #         "user_id": real_comment['user'].get("uid"),
+        #     }
+        return comments, hasmore, cursor
+
     async def like_video(self, aweme_id):
         '''喜欢一个视频： 为啥会失败呢？错误码8是什么意思？
         >>> resp = trio.run(DouyinTool().like_video, "6613913455902592259")
@@ -81,9 +112,9 @@ class DouyinTool(object):
             headers={**IPHONE_HEADER, "sdk-version": "1", "Accept-Encoding": 'br, gzip, deflate'})
         return resp.json() if resp is not None else {"status_code": -1}
 
-    async def _get_follow_list(self, user_id, offset=0, count=20):
+    async def _get_follow_list(self, user_id, offset=0):
         '''获取关注列表举例, 参考 'json_demo/follow_list.json'
-        >>> follow_list, _, _ = trio.run(DouyinTool()._get_follow_list, "84834596404", 0, 20)
+        >>> follow_list, _, _ = trio.run(DouyinTool()._get_follow_list, "84834596404", 0)
         >>> print(len(follow_list))
         20
         '''
@@ -91,7 +122,7 @@ class DouyinTool(object):
         follow_para = {
             "user_id": user_id,
             "offset": str(offset),
-            "count": str(count),
+            "count": str(20),
             "source_type": "2",
             "max_time": int(time.time()),
             "ac": "WIFI",
@@ -112,7 +143,7 @@ class DouyinTool(object):
         第二次post返回都是失败， post 缺少什么必要参数呢？'''
         total = 0
         while True:
-            follow_list, hasmore, offset = await self._get_follow_list(user_id, offset, count=20)
+            follow_list, hasmore, offset = await self._get_follow_list(user_id, offset)
             for follow in follow_list:
                 user_id = follow.get('uid', None)
                 nickname = follow.get('nickname', '')
@@ -291,4 +322,5 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=False)  # verbose=True shows the output
     logging.info("doctest finished.")
+
 
