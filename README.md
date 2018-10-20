@@ -74,6 +74,12 @@ Options:
 4. https://github.com/theelous3/asks
 
 
+欢迎扫码关注作者，获取更多信息哦～另外如果本源码对你有所帮助，可以[点赞以支持作者的持续更新](./img/URgood.jpg)。
+
+<img src="./img/owner.jpg" width = "300" height = "300" alt="关注作者" align=center />
+
+
+
 
 
 
