@@ -44,6 +44,7 @@ Options:
 
 1. `python douyin_downloader.py 84834596404 favorite`
 2. `python douyin_downloader.py --dir=. --concurrency=10 84834596404 favorite`
+3. `python douyin_downloader.py 84838778760 favorite`
 
 
 下载过程和结果展示：
@@ -62,6 +63,7 @@ Options:
 * [ ] 顺藤摸瓜，爬取自己关注的人发布视频->依次再爬取他们关注的人发布的视频...保存人的信息和视频的信息，然后把整个抖音数据库都扒下来了。注意下载的视频点赞数量需要超过一定比较妥。
 * [ ] 融入美女自动识别等功能（可以参考douyinbot工程）。
 * [ ] 总是出现 socket.gaierror 这个错误，有必要向 asks 作者反馈一下。
+* [ ] s = Session('https://example.org', connections=2)
 
 
 # 参考

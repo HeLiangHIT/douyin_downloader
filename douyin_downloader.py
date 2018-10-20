@@ -45,15 +45,9 @@ async def download_videos(_receiver, downloader):
                 logging.error(f"download {video['name']} from {url} FAIL!")
 
 
-func_dict = {
-    "favorite" : get_favorite_list,
-    "post" : get_post_list,
-
-}
-
-
 # 生产-消费 流程 的生产者 _sender
-async def generate_videos(_sender, user, action, repeat_func):
+async def generate_videos(_sender, func_dict, user, action, repeat_func):
+    '''根据用户选择调用指定函数'''
     async for video in func_dict[action](user, repeat_func=repeat_func):
         await _sender.send(video)
     await _sender.send(None)
@@ -61,12 +55,23 @@ async def generate_videos(_sender, user, action, repeat_func):
 
 # 主函数
 async def main(user, action, save_dir, concurrency):
+    '''主函数'''
+    dy = DouyinTool()
+    func_dict = {
+        "favorite" : dy.get_favorite_list,
+        "post" : dy.get_post_list,
+    }
+    if action not in func_dict.keys():
+        logging.critical(f"action={action} is not supported!")
+    if not user.isdigit():
+        logging.critical(f"user={user} is illegal!")
+
     logging.info(f"start download favorite video to {save_dir} with {concurrency} concurrency ...")
     downloader = AsyncDownloader(f"{save_dir}/{user}/{action}")
 
     async with trio.open_nursery() as nursery:
         _sender, _receiver = trio.open_memory_channel(concurrency) # 并行数量
-        nursery.start_soon(generate_videos, _sender, user, action, downloader.is_file_downloaded)
+        nursery.start_soon(generate_videos, _sender, func_dict, user, action, downloader.is_file_downloaded)
         nursery.start_soon(download_videos, _receiver, downloader)
 
     logging.info("file downloads over!")
@@ -77,11 +82,7 @@ if __name__ == '__main__':
     save_dir = arguments["--dir"] if arguments["--dir"] else _SAVE_DIR # 不会取doc里`*default`的值
     concurrency = int(arguments["--concurrency"])
     user = arguments['<user>']
-    if not user.isdigit():
-        logging.critical(f"user={user} is illegal!")
     action = arguments['<action>']
-    if action not in func_dict.keys():
-        logging.critical(f"action={action} is not supported!")
     trio.run(main, user, action, save_dir, concurrency)
 
 
