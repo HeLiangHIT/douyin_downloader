@@ -90,7 +90,7 @@ class SignUtil(object):
         url = f"{_API}/token/douyin/version/{self.version}" if self.version else f"{_API}/token/douyin"
         resp = await self.s.get(url)
         logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
-        return resp.json().get('token', None)
+        return resp.json().get('token', '')
 
     async def get_device(self):
         '''获取新的设备信息:有效期60分钟永久
@@ -119,7 +119,7 @@ class SignUtil(object):
         url = f"{_API}/douyin/device/new/version/{self.version}" if self.version else "{_API}/douyin/device/new"
         resp = await self.s.get(url)
         logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
-        return resp.json().get('data', None)
+        return resp.json().get('data', {})
 
     async def get_sign(self, token, query):
         '''使用拼装参数签名
@@ -136,7 +136,7 @@ class SignUtil(object):
         url = f"{_API}/sign"
         resp = await self.s.post(url, json={"token": token, "query": params2str(query)})
         logging.debug(f"post response from {url} is {resp} with body: {trim(resp.text)}")
-        return resp.json().get('data', None), resp.json()
+        return resp.json().get('data', {}), resp.json()
 
     async def get_sign_params(self, force=False):
         '''获取可用的签名参数，由于每次获取后的有效时间是大概60分钟，
