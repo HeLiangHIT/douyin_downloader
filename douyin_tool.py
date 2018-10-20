@@ -112,7 +112,7 @@ class DouyinTool(object):
             headers={**IPHONE_HEADER, "sdk-version": "1", "Accept-Encoding": 'br, gzip, deflate'})
         return resp.json() if resp is not None else {"status_code": -1}
 
-    async def _get_follow_list(self, user_id, offset=0, min_time=None, max_time=int(time.time())):
+    async def _get_follow_list(self, user_id, offset=0):
         '''获取关注列表举例, 参考 'json_demo/follow_list.json'
         >>> follow_list, _, _ = trio.run(DouyinTool()._get_follow_list, "84834596404", 0)
         >>> print(len(follow_list))
@@ -124,8 +124,7 @@ class DouyinTool(object):
             "offset": str(offset),
             "count": str(20),
             "source_type": "2",
-            # "min_time": str(min_time),
-            "max_time": str(max_time),
+            "max_time": str(int(time.time())),
             "ac": "WIFI",
         }
         resp = await self.sign_util.curl(url, follow_para)
@@ -137,16 +136,14 @@ class DouyinTool(object):
         # hasmore = follow_info.get('has_more', False) # always be true
         hasmore = follow_info.get('total', 0) > (offset + 20)
 
-        return follow_list, hasmore, offset + 20, follow_info.get('min_time', min_time), follow_info.get('max_time', int(max_time))
+        return follow_list, hasmore, offset + 20
 
     async def get_follow_list(self, user_id, offset=0, repeat_func=None):
         '''爬取指定用户的所有关注的用户列表 async for video in get_follow_list(uid): ...
         第二次post返回都是失败， post 缺少什么必要参数呢？'''
         total = 0
-        min_time=int(time.time())
-        max_time=int(time.time())
         while True:
-            follow_list, hasmore, offset, min_time, max_time = await self._get_follow_list(user_id, offset, min_time, max_time)
+            follow_list, hasmore, offset = await self._get_follow_list(user_id, offset)
             # print(len(follow_list), hasmore, offset)
             for follow in follow_list:
                 uid = follow.get('uid', None)
@@ -326,6 +323,7 @@ async def _get_post_list_test():
 
 
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod(verbose=False)  # verbose=True shows the output
-    logging.info("doctest finished.")
+    # import doctest
+    # doctest.testmod(verbose=False)  # verbose=True shows the output
+    # logging.info("doctest finished.")
+    print(trio.run(_get_follow_list_test))
