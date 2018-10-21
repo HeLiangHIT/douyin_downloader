@@ -15,7 +15,7 @@ def read(*parts):
 
 setup(
     name='douyin_downloader', #pypi中的名称，pip或者easy_install安装时使用的名称
-    version='1.0.0',
+    version='1.0.1',
     py_modules=['util', 'douyin_tool', 'douyin_downloader'], # 需要打包的 Python 单文件列表
     url='https://github.com/HeLiangHIT/douyin_downloader',
     license='GPLv3',
