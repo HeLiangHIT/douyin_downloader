@@ -30,8 +30,23 @@ a8"    `Y88 a8"     "8a `8b    d88b    d8' 88P'   `"8a 88 a8"     "8a ""     `Y8
 项目地址： [https://github.com/HeLiangHIT/douyin_downloader](https://github.com/HeLiangHIT/douyin_downloader)
 
 
-# 用法
+# 使用方法
 
+安装后使用：
+1. 安装： `git clone https://github.com/HeLiangHIT/douyin_downloader.git && cd douyin_downloader && python setup.py install` 或者 `pip install douyin_downloader`
+2. 使用： 执行 `douyin_downloader` 命令，然后根据提示输入合适参数。
+
+```
+Input user_id:123
+Choose action[1.favorite, 2.post] *default 1:
+Do you want to follow user? [yes/no] *default no:
+Input video save dir *default /Users/heliang/Movies/douyin/:
+begin to download 123's favorite video to /Users/heliang/Movies/douyin/ ...
+...
+```
+
+
+从源码运行：
 查看帮助： `python douyin_downloader.py --help`
 
 ```

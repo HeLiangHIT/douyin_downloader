@@ -10,12 +10,9 @@ import codecs, os
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-def read(*parts):
-    return codecs.open(os.path.join(here, *parts), 'r').read()
-
 setup(
     name='douyin_downloader', #pypi中的名称，pip或者easy_install安装时使用的名称
-    version='1.0.1',
+    version='1.0.2',
     py_modules=['util', 'douyin_tool', 'douyin_downloader'], # 需要打包的 Python 单文件列表
     url='https://github.com/HeLiangHIT/douyin_downloader',
     license='GPLv3',
@@ -30,7 +27,10 @@ setup(
     # packages = [], # 需要处理的包目录
 
     description='The douyin video downloader',
-    long_description=read('README.md'),
+    long_description='''douyin_downloader
+    抖音视频下载器，批量下载自己喜欢过的视频/上传的视频/关注用户发布的视频/关注用户喜欢的视频。
+    用法：执行 douyin_downloader 命令，根据提示输入合法参数即可。
+    ''',
     # 添加这个选项，在 windows 下Python目录的 scripts 下生成exe文件，注意：模块与函数之间是冒号:
     entry_points={'console_scripts': [
         'douyin_downloader = douyin_downloader:cmd_run',

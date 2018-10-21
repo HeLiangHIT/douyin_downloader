@@ -96,11 +96,11 @@ async def main(user, action, follow, save_dir, concurrency):
 def cmd_run():
     '''命令行输入参数'''
     user = user_input("Input user_id:")
-    _action = user_input("Choose action[1.favorite, 2.post] *default 1:", ['1', '2'])
+    _action = user_input("Choose action[1.favorite, 2.post] *default 1:", ['1', '2'], '1')
     action = ('favorite', 'post')[int(_action) - 1]
-    _follow = user_input("Do you want to follow user? [yes/no]:", ['yes', 'no'])
+    _follow = user_input("Do you want to follow user? [yes/no] *default no:", ['yes', 'no'], 'no')
     follow = _follow == 'yes'
-    save_dir = user_input("Input video save dir:")
+    save_dir = user_input(f"Input video save dir *default {_SAVE_DIR}:", [], _SAVE_DIR)
     concurrency = 20
     print(f"begin to download {'following of ' if follow else ''}{user}'s {action} video to {save_dir} ... ")
 

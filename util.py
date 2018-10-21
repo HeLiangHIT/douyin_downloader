@@ -67,9 +67,11 @@ def mixString(pwd):
     return "".join([hex(ord(c) ^ 5)[-2:] for c in pwd])
 
 
-def user_input(msg, choices=[], retries=3):
+def user_input(msg, choices=[], default='', retries=3):
     '''用户输入验证'''
     res = input(msg)
+    if len(res) == 0:
+        return default
     if choices and res not in choices:
         if retries-1 <= 0:
             print("Byebye! Stubborn man!")
