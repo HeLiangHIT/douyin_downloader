@@ -13,4 +13,4 @@ python-dateutil==2.7.3
 six==1.11.0
 sniffio==1.0.0
 sortedcontainers==2.0.5
-trio==0.8.0
+trio==0.9.0
