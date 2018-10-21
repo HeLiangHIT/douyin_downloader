@@ -67,6 +67,17 @@ def mixString(pwd):
     return "".join([hex(ord(c) ^ 5)[-2:] for c in pwd])
 
 
+def user_input(msg, choices=[], retries=3):
+    '''用户输入验证'''
+    res = input(msg)
+    if choices and res not in choices:
+        if retries-1 <= 0:
+            print("Byebye! Stubborn man!")
+            exit(-1)
+        print(f'Choose one of {choices}, please!', end=' ')
+        return user_input(msg, choices, retries-1)
+    return res
+
 
 class SignUtil(object):
     """抖音签名请求专用"""

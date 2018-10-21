@@ -33,7 +33,7 @@ setup(
     long_description=read('README.md'),
     # 添加这个选项，在 windows 下Python目录的 scripts 下生成exe文件，注意：模块与函数之间是冒号:
     entry_points={'console_scripts': [
-        'douyin_downloader = douyin_downloader',
+        'douyin_downloader = douyin_downloader:cmd_run',
     ]},
     # 此项需要，否则卸载时报windows error
     zip_safe=False,

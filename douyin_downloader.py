@@ -93,6 +93,20 @@ async def main(user, action, follow, save_dir, concurrency):
     logging.info("all videos are downloaded! congratulations!!!")
 
 
+def cmd_run():
+    '''命令行输入参数'''
+    user = user_input("Input user_id:")
+    _action = user_input("Choose action[1.favorite, 2.post] *default 1:", ['1', '2'])
+    action = ('favorite', 'post')[int(_action) - 1]
+    _follow = user_input("Do you want to follow user? [yes/no]:", ['yes', 'no'])
+    follow = _follow == 'yes'
+    save_dir = user_input("Input video save dir:")
+    concurrency = 20
+    print(f"begin to download {'following of ' if follow else ''}{user}'s {action} video to {save_dir} ... ")
+
+    trio.run(main, user, action, follow, save_dir, concurrency)
+
+
 if __name__ == '__main__':
     arguments = docopt(__doc__, version="douyin_downloader 0.0.1")
     save_dir = arguments["--dir"] if arguments["--dir"] else _SAVE_DIR # 不会取doc里`*default`的值
