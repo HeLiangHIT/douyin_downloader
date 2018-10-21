@@ -33,6 +33,7 @@ a8"    `Y88 a8"     "8a `8b    d88b    d8' 88P'   `"8a 88 a8"     "8a ""     `Y8
 # 使用方法
 
 安装后使用：
+
 1. 安装可选如下几种方式： 
   + 源码安装： `git clone https://github.com/HeLiangHIT/douyin_downloader.git && cd douyin_downloader && python setup.py install` 
   + pip源安装： `pip install douyin_downloader`
@@ -50,6 +51,7 @@ begin to download 123's favorite video to /Users/heliang/Movies/douyin/ ...
 
 
 从源码运行：
+
 查看帮助： `python douyin_downloader.py --help`
 
 ```
@@ -64,7 +66,7 @@ Options:
   --dir=dir                    select file save dir. * default: '$HOME/Movies/douyin/'
   --concurrency=concurrency    select the concurrency number of downloader. [default: 20]
 ```
-> 关于用户 user_id 的获取， 参考 https://github.com/hacksman/spider_world 的介绍。
+> 关于用户 user_id 的获取， 参考 https://github.com/hacksman/spider_world 的介绍。大致流程是 抖音>我>右上角...>分享个人主页>以图片形式分享到微信>微信扫码获取url地址>比如http..../user/84834596404最后的数字就是user_id值了。
 
 
 举例：
@@ -79,7 +81,6 @@ Options:
 
 ![下载中...](img/downloading.png)
 ![下载结果](img/result.png)
-
 
 # TODO
 
