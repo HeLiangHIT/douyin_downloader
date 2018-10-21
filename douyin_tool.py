@@ -228,7 +228,7 @@ class DouyinTool(object):
             # 注意测试发现这个播放列表里前两个链接都是可以用的，下载的时候可以为了保险起见循环下载测试
             return play_addr_raw[0:2]
         except Exception as e:
-            logging.error(f"parser video url fail from {trim(resp.text, 200)}!")
+            logging.error(f"parser video url fail from {url}!")
             return None
 
     async def _get_music_url(self, music_id):
