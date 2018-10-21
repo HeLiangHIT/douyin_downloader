@@ -58,7 +58,7 @@ async def generate_videos(_sender, func_dict, user, action, repeat_func):
 async def crawler_user_video(user, func_dict, action, save_dir, concurrency):
     '''下载指定用户指定的'''
     logging.info(f"start download {user}'s favorite video to {save_dir} with {concurrency} concurrency ...")
-    downloader = AsyncDownloader(f"{save_dir}/{user}/{action}")
+    downloader = AsyncDownloader(os.path.join(save_dir, user, action))
 
     async with trio.open_nursery() as nursery:
         _sender, _receiver = trio.open_memory_channel(concurrency) # 并行数量

@@ -46,9 +46,11 @@ def trim(text, max_len = 50, suffix = '...'):
     text = text.replace('\n', '')
     return f"{text[:max_len]} {suffix}" if len(text) > max_len else text
 
-def fname_normalize(name, del_char='/ '):
+def fname_normalize(name, del_char=' /~!@#$%^&*()\\[]}{|'):
     '''规范化文件名称'''
-    return name.replace('/', '_').replace(' ','')
+    for c in del_char:
+        name = name.replace(c, '')
+    return name
 
 
 def params2str(params):
@@ -205,7 +207,8 @@ class AsyncDownloader(object):
     def __init__(self, save_dir):
         super(AsyncDownloader, self).__init__()
         self.save_dir = save_dir
-        os.system("mkdir -p %s" % save_dir)
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
         
     async def download_file(self, url, headers=IPHONE_HEADER, timeout=DOWNLOAD_TIMEOUT, res_time=RETRIES_TIMES):
         if res_time <= 0: # 重试超过了次数
