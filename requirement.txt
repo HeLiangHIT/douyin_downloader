@@ -1,0 +1,16 @@
+arrow==0.12.1
+asks==2.2.0
+async-generator==1.10
+attrs==18.2.0
+contextvars==2.3
+docopt==0.6.2
+h11==0.8.1
+idna==2.7
+immutables==0.6
+multio==0.2.4
+outcome==1.0.0
+python-dateutil==2.7.3
+six==1.11.0
+sniffio==1.0.0
+sortedcontainers==2.0.5
+trio==0.8.0
