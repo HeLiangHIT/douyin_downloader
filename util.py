@@ -46,7 +46,7 @@ def trim(text, max_len = 50, suffix = '...'):
     text = text.replace('\n', '')
     return f"{text[:max_len]} {suffix}" if len(text) > max_len else text
 
-def fname_normalize(name, del_char=' /~!@#$%^&*()\\[]}{|'):
+def fname_normalize(name, del_char=' /~!@#$%^&*()\\[]}{|?'):
     '''规范化文件名称'''
     for c in del_char:
         name = name.replace(c, '')
