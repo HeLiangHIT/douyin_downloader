@@ -82,6 +82,7 @@ async def main(user, action, follow, save_dir, concurrency):
 
     if follow:
         user_ids = set()
+        logging.info(f"Crawler {user}'s follow list...")
         async for people in dy.get_follow_list(user):
             user_ids.add(people['user_id'])
         logging.info(f"there are {len(user_ids)} followed users need for crawler, let's begin!")
