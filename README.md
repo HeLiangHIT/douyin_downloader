@@ -33,8 +33,11 @@ a8"    `Y88 a8"     "8a `8b    d88b    d8' 88P'   `"8a 88 a8"     "8a ""     `Y8
 # 使用方法
 
 安装后使用：
-1. 安装： `git clone https://github.com/HeLiangHIT/douyin_downloader.git && cd douyin_downloader && python setup.py install` 或者 `pip install douyin_downloader`
-2. 使用： 执行 `douyin_downloader` 命令，然后根据提示输入合适参数。
+1. 安装可选如下几种方式： 
+  + 源码安装： `git clone https://github.com/HeLiangHIT/douyin_downloader.git && cd douyin_downloader && python setup.py install` 
+  + pip源安装： `pip install douyin_downloader`
+  + 到 https://github.com/HeLiangHIT/douyin_downloader/releases 下载可执行文件
+2. 使用： 在cmd下执行 `douyin_downloader` 命令，然后根据提示输入用户id/下载类型/是否下载关注用户等参数。
 
 ```
 Input user_id:123
