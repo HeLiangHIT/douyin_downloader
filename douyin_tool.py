@@ -250,7 +250,7 @@ class DouyinTool(object):
         author_name = video['author'].get("nickname")
         author_uid = video['author'].get('uid')
         video_desc = video.get('desc')
-        music_id = video['music']['play_url'].get('uri')
+        # music_id = video['music']['play_url'].get('uri')
         aweme_id = video.get("aweme_id")
 
         file_name = "_".join([author_name, author_uid, trim(video_desc, 20, '')])
@@ -259,16 +259,16 @@ class DouyinTool(object):
             video_url = music_url = None # 用于下载器的去重复处理回调函数，当文件已经存在时不用再获取视频地址了，无需下载
         else:
             video_url = await self._get_video_url(aweme_id)
-            music_url = await self._get_music_url(music_id)
+            # music_url = await self._get_music_url(music_id)
 
         download_item = {
             "author_name": author_name,
             "video_desc": video_desc,
             "author_uid": author_uid,
-            "music_id": music_id,
+            # "music_id": music_id,
             "aweme_id" : aweme_id,
             "video_url" : video_url,
-            "music_url" : music_url,
+            # "music_url" : music_url,
             "name" : name,
         }
 
