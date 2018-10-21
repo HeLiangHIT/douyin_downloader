@@ -47,7 +47,7 @@ Input video save dir *default /Users/heliang/Movies/douyin/:
 begin to download 123's favorite video to /Users/heliang/Movies/douyin/ ...
 ...
 ```
-
+> 多次重复执行会自动去重处理，相同的视频文件不会重复下载。
 
 从源码运行：
 查看帮助： `python douyin_downloader.py --help`
