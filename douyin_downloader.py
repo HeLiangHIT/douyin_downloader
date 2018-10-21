@@ -19,6 +19,7 @@ Options:
 
 from douyin_tool import *
 from docopt import docopt
+import sys
 
 # 默认配置参数
 _SAVE_DIR = "%s/Movies/douyin/" % os.path.expanduser('~') # os.environ['HOME']
@@ -77,8 +78,10 @@ async def main(user, action, follow, save_dir, concurrency):
 
     if action not in func_dict.keys():
         logging.critical(f"action={action} is not supported!")
+        exit(-1)
     if not user.isdigit():
         logging.critical(f"user={user} is illegal!")
+        exit(-1)
 
     if follow:
         user_ids = set()
@@ -109,13 +112,16 @@ def cmd_run():
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version="douyin_downloader 0.0.1")
-    save_dir = arguments["--dir"] if arguments["--dir"] else _SAVE_DIR # 不会取doc里`*default`的值
-    concurrency = int(arguments["--concurrency"])
-    user = arguments['<user>']
-    action = arguments['<action>']
-    follow = arguments['follow'] # True if set, else False
-    trio.run(main, user, action, follow, save_dir, concurrency)
+    if len(sys.argv) < 2:
+        cmd_run()
+    else:
+        arguments = docopt(__doc__, version="douyin_downloader 0.0.1")
+        save_dir = arguments["--dir"] if arguments["--dir"] else _SAVE_DIR # 不会取doc里`*default`的值
+        concurrency = int(arguments["--concurrency"])
+        user = arguments['<user>']
+        action = arguments['<action>']
+        follow = arguments['follow'] # True if set, else False
+        trio.run(main, user, action, follow, save_dir, concurrency)
 
 
 
