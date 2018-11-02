@@ -253,7 +253,7 @@ class DouyinTool(object):
         # music_id = video['music']['play_url'].get('uri')
         aweme_id = video.get("aweme_id")
 
-        file_name = "_".join([author_name, author_uid, trim(video_desc, 20, '')])
+        file_name = "_".join([author_name, trim(video_desc, 20, '')])
         name = f"{file_name}.mp4"
         if repeat_func and repeat_func(name):
             video_url = music_url = None # 用于下载器的去重复处理回调函数，当文件已经存在时不用再获取视频地址了，无需下载
