@@ -41,7 +41,7 @@ async def download_videos(_receiver, downloader):
             content = await downloader.download_file(url)
             if content is not None:
                 await downloader.save_file(video['name'], content)
-                logging.info(f"download {video['name']} from {url} succ")
+                logging.info(f"download {video['name']} succ")
             else:
                 logging.error(f"download {video['name']} from {url} FAIL!")
 
