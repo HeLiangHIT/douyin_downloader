@@ -103,7 +103,7 @@ class SignUtil(object):
         32
         '''
         url = f"{_API}/token/douyin/version/{self.version}" if self.version else f"{_API}/token/douyin"
-        resp = await self.s.get(url)
+        resp = await self.s.get(url, verify=False)
         logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
         return resp.json().get('token', '')
 
@@ -132,7 +132,7 @@ class SignUtil(object):
         iPhone8,1
         '''
         url = f"{_API}/douyin/device/new/version/{self.version}" if self.version else "{_API}/douyin/device/new"
-        resp = await self.s.get(url)
+        resp = await self.s.get(url, verify=False)
         logging.debug(f"get response from {url} is {resp} with body: {trim(resp.text)}")
         return resp.json().get('data', {})
 
@@ -149,7 +149,7 @@ class SignUtil(object):
         '''
         assert isinstance(query, dict)
         url = f"{_API}/sign"
-        resp = await self.s.post(url, json={"token": token, "query": params2str(query)})
+        resp = await self.s.post(url, json={"token": token, "query": params2str(query)}, verify=False)
         logging.debug(f"post response from {url} is {resp} with body: {trim(resp.text)}")
         return resp.json().get('data', {}), resp.json()
 
