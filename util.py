@@ -10,6 +10,7 @@ ref2: https://github.com/hacksman/spider_world 抖音爬虫例子
 '''
 
 import trio, asks, logging, json, time, os, arrow, socket, random
+from contextlib import suppress
 asks.init('trio')
 
 logging.basicConfig(level=logging.INFO, 
@@ -234,9 +235,10 @@ class AsyncDownloader(object):
     # 异步文件保存
     async def save_file(self, name, content):
         file_path = os.path.join(self.save_dir, fname_normalize(name))
-        fd = await trio.open_file(file_path, 'wb')
-        await fd.write(content)
-        await fd.aclose()
+        with suppress(OSError):
+            fd = await trio.open_file(file_path, 'wb')
+            await fd.write(content)
+            await fd.aclose()
 
 
 
